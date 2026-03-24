@@ -9,8 +9,8 @@ Model:  I(f) = alpha / sqrt( beta^2 * (f - f0^2/f)^2 + 1 ) + io
   p[3] = io     current offset (A)
 
 Usage:
-  python lrc_fit.py                      # reads output_simple.csv in same directory
-  python lrc_fit.py my_data.csv          # specify a different input file
+  python lrc_fit.py                      # reads output.csv produced by process_lrc.py
+  python lrc_fit.py path/to/file.csv     # specify a different input file
 """
 
 import sys
@@ -25,7 +25,7 @@ import matplotlib.gridspec as gridspec
 # ---------------------------------------------------------------------------
 # Config
 # ---------------------------------------------------------------------------
-DEFAULT_CSV = os.path.join(os.path.dirname(os.path.abspath(__file__)), "output_simple.csv")
+DEFAULT_CSV = os.path.join(os.path.dirname(os.path.abspath(__file__)), "output.csv")
 MAX_ROWS = 20   # mirrors the R script's cap of 20 rows
 
 
@@ -50,9 +50,17 @@ def load_csv(path):
     with open(path, newline="", encoding="utf-8") as f:
         reader = csv.DictReader(f)
         rows = list(reader)
-    freq     = np.array([float(r["freq"])     for r in rows])
-    nocore   = np.array([float(r["nocore"])   for r in rows])
-    withcore = np.array([float(r["withcore"]) for r in rows])
+    # output.csv columns: "Measured Frequency", "Peak Current - No Core", "Peak Current - With Core"
+    # Skip rows where any value is missing (e.g. a file was absent during processing).
+    valid = [
+        r for r in rows
+        if r.get("Measured Frequency", "").strip()
+        and r.get("Peak Current - No Core", "").strip()
+        and r.get("Peak Current - With Core", "").strip()
+    ]
+    freq     = np.array([float(r["Measured Frequency"])       for r in valid])
+    nocore   = np.array([float(r["Peak Current - No Core"])   for r in valid])
+    withcore = np.array([float(r["Peak Current - With Core"]) for r in valid])
     # cap at MAX_ROWS like the R script
     return freq[:MAX_ROWS], nocore[:MAX_ROWS], withcore[:MAX_ROWS]
 

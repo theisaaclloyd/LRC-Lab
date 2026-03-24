@@ -52,9 +52,10 @@ def main():
     script_dir = os.path.dirname(os.path.abspath(__file__))
     results = []
 
+    lab_data_dir = os.path.join(script_dir, "lab_data")
     for i, freq in enumerate(SIG_GEN_FREQS, start=1):
-        nc_path = os.path.join(script_dir, f"{freq}nc.csv")
-        wc_path = os.path.join(script_dir, f"{freq}wc.csv")
+        nc_path = os.path.join(lab_data_dir, f"{freq}nc.csv")
+        wc_path = os.path.join(lab_data_dir, f"{freq}wc.csv")
 
         nc_mf, nc_mf_unc, nc_peak, nc_peak_unc = (
             process_file(nc_path) if os.path.exists(nc_path) else (None, None, None, None)
